@@ -10,9 +10,11 @@ package hls
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-
 	"github.com/q191201771/naza/pkg/nazaerrors"
+	"strings"
+	"time"
 
 	"github.com/q191201771/lal/pkg/mpegts"
 
@@ -278,7 +280,19 @@ func (m *Muxer) openFragment(ts uint64, discont bool) error {
 		return err
 	}
 
-	if err := m.fragment.WriteFile(m.patpmt); err != nil {
+	// my data
+	data_map := map[string]interface{}{
+		"timestamp": time.Now().UnixMilli(),
+		"clock":     time.Now().Format(time.RFC3339Nano),
+	}
+	map_json, _ := json.Marshal(data_map)
+	map_data := []byte(string(map_json))
+	map_data = append(map_data, strings.Repeat(" ", 500-len(map_data))...)
+
+	new_data := append(map_data, m.patpmt...)
+	// my data
+
+	if err := m.fragment.WriteFile(new_data); err != nil {
 		return err
 	}
 

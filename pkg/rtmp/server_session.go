@@ -272,6 +272,7 @@ func (s *ServerSession) doAck(stream *Stream) error {
 	Log.Infof("[%s] < R Acknowledgement. ignore. sequence number=%d.", s.UniqueKey(), seqNum)
 	return nil
 }
+
 func (s *ServerSession) doUserControl(stream *Stream) error {
 	// TODO(chef): 检查buff长度有效性 202301
 	userControlType := bele.BeUint16(stream.msg.buff.Bytes())
@@ -282,6 +283,7 @@ func (s *ServerSession) doUserControl(stream *Stream) error {
 	}
 	return nil
 }
+
 func (s *ServerSession) doDataMessageAmf0(stream *Stream) error {
 	if s.sessionStat.BaseType() != base.SessionBaseTypePubStr {
 		return nazaerrors.Wrap(base.ErrRtmpUnexpectedMsg)
@@ -375,6 +377,7 @@ func (s *ServerSession) doCommandAmf3Message(stream *Stream) error {
 	stream.msg.Skip(1)
 	return s.doCommandMessage(stream)
 }
+
 func (s *ServerSession) writeAcknowledgementIfNeeded(stream *Stream) error {
 	if s.peerWinAckSize <= 0 {
 		return nil

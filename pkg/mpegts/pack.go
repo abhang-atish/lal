@@ -53,10 +53,10 @@ func (frame *Frame) Pack() []byte {
 	// TODO(chef): perf 复用这块buffer
 	buf := make([]byte, bufLen)
 
-	lpos := 0              // 当前输入帧的处理位置
-	rpos := len(frame.Raw) // 当前输入帧大小
-	first := true          // 是否为帧的首个packet的标准
-	packetPosAtBuf := 0    // 当前输出packet相对于整个输出内存块的位置
+	lpos := 0              // 当前输入帧的处理位置 // The processing position of the current input frame
+	rpos := len(frame.Raw) // 当前输入帧大小	//Current input frame size
+	first := true          // 是否为帧的首个packet的标准 // Whether it is the first packet of the frame
+	packetPosAtBuf := 0    // 当前输出packet相对于整个输出内存块的位置 //The position of the current output packet relative to the entire output memory block
 
 	for lpos != rpos {
 

@@ -10,7 +10,6 @@ package remux
 
 import (
 	"encoding/hex"
-
 	"github.com/q191201771/lal/pkg/aac"
 	"github.com/q191201771/lal/pkg/avc"
 	"github.com/q191201771/lal/pkg/base"
@@ -467,6 +466,7 @@ func (s *Rtmp2MpegtsRemuxer) onFrame(frame *mpegts.Frame) {
 
 	if frame.Sid == mpegts.StreamIdAudio {
 		// 为了考虑没有视频的情况也能切片，所以这里判断spspps为空时，也建议生成fragment
+		// In order to consider slicing even if there is no video, it is also recommended to generate fragment when spspps is judged to be empty.
 		boundary = !s.videoSeqHeaderCached()
 	} else {
 		// 收到视频，可能触发建立fragment的条件是：
@@ -475,6 +475,13 @@ func (s *Rtmp2MpegtsRemuxer) onFrame(frame *mpegts.Frame) {
 		//  (没有收到过音频seq header) || 说明 只有视频
 		//  (收到过音频seq header && fragment没有打开) || 说明 音视频都有，且都已ready
 		//  (收到过音频seq header && fragment已经打开 && 音频缓存数据不为空) 说明 为什么音频缓存需不为空？
+		// )
+		// Upon receiving the video, the conditions that may trigger the creation of a fragment are:
+		//Keyframe data &&
+		//(
+		// (No audio seq header received) || Description Only video
+		// (Audio seq header && fragment has been received but not opened) || Description Both audio and video are available, and both are ready.
+		// (Audio seq header received && fragment has been opened && audio cache data is not empty) Explanation Why does the audio cache need not be empty?
 		// )
 		boundary = frame.Key && (!s.audioSeqHeaderCached() || !s.opened || !s.audioCacheEmpty())
 	}

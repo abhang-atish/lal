@@ -9,6 +9,7 @@
 package remux
 
 import (
+	"fmt"
 	"github.com/q191201771/lal/pkg/base"
 	"github.com/q191201771/lal/pkg/h2645"
 )
@@ -22,7 +23,7 @@ import (
 // - 将rtmp流中的视频转换成ffmpeg可解码的格式
 type Rtmp2AvPacketRemuxer struct {
 	option     Rtmp2AvPacketRemuxerOption
-	onAvPacket func(pkt base.AvPacket, arg interface{})
+	onAvPacket func(pkt base.AvPacket)
 
 	spspps []byte // annexb格式
 }
@@ -53,22 +54,22 @@ func (r *Rtmp2AvPacketRemuxer) WithOption(modOption func(option *Rtmp2AvPacketRe
 // WithOnAvPacket
 //
 // @param onAvPacket: pkt 内存由内部新申请，回调后内部不再使用
-func (r *Rtmp2AvPacketRemuxer) WithOnAvPacket(onAvPacket func(pkt base.AvPacket, arg interface{})) *Rtmp2AvPacketRemuxer {
+func (r *Rtmp2AvPacketRemuxer) WithOnAvPacket(onAvPacket func(pkt base.AvPacket)) *Rtmp2AvPacketRemuxer {
 	r.onAvPacket = onAvPacket
 	return r
 }
 
-func (r *Rtmp2AvPacketRemuxer) FeedRtmpMsg(msg base.RtmpMsg, arg interface{}) error {
+func (r *Rtmp2AvPacketRemuxer) FeedRtmpMsg(msg base.RtmpMsg) {
 	switch msg.Header.MsgTypeId {
 	case base.RtmpTypeIdVideo:
-		return r.feedVideo(msg, arg)
+		r.feedVideo(msg)
 	}
-	return nil
+	//return nil
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-func (r *Rtmp2AvPacketRemuxer) feedVideo(msg base.RtmpMsg, arg interface{}) error {
+func (r *Rtmp2AvPacketRemuxer) feedVideo(msg base.RtmpMsg) error {
 	if len(msg.Payload) <= 5 {
 		return nil
 	}
@@ -167,7 +168,7 @@ func (r *Rtmp2AvPacketRemuxer) feedVideo(msg base.RtmpMsg, arg interface{}) erro
 		} else {
 			pkt.PayloadType = base.AvPacketPtHevc
 		}
-		r.onAvPacket(pkt, arg)
+		r.onAvPacket(pkt)
 	}
 
 	return err
@@ -175,6 +176,8 @@ func (r *Rtmp2AvPacketRemuxer) feedVideo(msg base.RtmpMsg, arg interface{}) erro
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-func defaultOnAvPacket(pkt base.AvPacket, arg interface{}) {
+func defaultOnAvPacket(pkt base.AvPacket) {
 	// noop
+	fmt.Println(pkt.DebugString())
+
 }

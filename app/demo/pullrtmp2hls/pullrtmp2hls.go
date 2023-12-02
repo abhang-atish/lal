@@ -23,6 +23,7 @@ import (
 )
 
 func main() {
+	InitCache()
 	_ = nazalog.Init(func(option *nazalog.Option) {
 		option.AssertBehavior = nazalog.AssertFatal
 	})
@@ -44,8 +45,8 @@ func main() {
 		nazalog.Fatalf("parse rtmp url failed. url=%s, err=%+v", url, err)
 	}
 	streamName := ctx.LastItemOfPath
-
-	hlsMuexer := hls.NewMuxer(streamName, &hlsMuxerConfig, nil)
+	var observer = Observer{}
+	hlsMuexer := hls.NewMuxer(streamName, &hlsMuxerConfig, &observer)
 	hlsMuexer.Start()
 
 	rtmp2Mpegts := remux.NewRtmp2MpegtsRemuxer(hlsMuexer)
